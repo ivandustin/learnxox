@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 from orbax.checkpoint import StandardCheckpointer
 from flax.nnx import softmax
-from learn.load import load
+from numpy import sum
 from encode import encode
+from load import load
 from xox.init import init
 from xox import O
 
 
-def ask(model, x):
-    y = softmax(model(encode(x)))
+def ask(models, state):
+    y = sum([softmax(model(encode(state))) for model in models], axis=0)
     return y, y.argmax()
 
 
@@ -17,7 +18,7 @@ with StandardCheckpointer() as checkpointer:
     state = init()
     state[range(8)] = O
     y, i = ask(model, state)
-    assert i == 8
+    assert i == 8, (y, i)
 
     from xox.exceptions import Over, Win, Lose, Draw
     from xox.string import string

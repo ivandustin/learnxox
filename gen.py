@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 from collections import deque
+from pathlib import Path
 from numpy import any
 from xox.exceptions import Over, Win, Lose
 from xox.loop import loop
@@ -8,8 +10,9 @@ from xox import O
 from encode import encode
 
 stack = []
-queue = deque(maxlen=100)
-block = deque(maxlen=900)
+maxlen = 10000
+win = deque(maxlen=maxlen)
+block = deque(maxlen=maxlen)
 
 
 def x(state):
@@ -29,10 +32,10 @@ def string(encoded):
     return "\n".join([" ".join(map(str, row)) for row in encoded.T + 1])
 
 
-def out(state, index):
-    print(string(encode(state)))
-    print(index + 1)
-    print()
+def out(file, state, index):
+    print(string(encode(state)), file=file)
+    print(index + 1, file=file)
+    print(file=file)
 
 
 def is_full(queue):
@@ -49,14 +52,22 @@ def is_block(state, index):
     return False
 
 
-while not is_full(queue) or not is_full(block):
+def write(path, queue):
+    with open(path, "w") as file:
+        for state, index in queue:
+            out(file, state, index)
+
+
+while not is_full(win) or not is_full(block):
     try:
         stack = []
         loop(x, o)
     except Over as e:
         if isinstance(e, Win):
-            queue.append(stack.pop())
+            win.append(stack.pop())
 
-for items in [queue, block]:
-    for item in items:
-        out(*item)
+winfile = Path("win") / "train.txt"
+blockfile = Path("block") / "train.txt"
+
+write(winfile, win)
+write(blockfile, block)

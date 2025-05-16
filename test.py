@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from orbax.checkpoint import StandardCheckpointer
 from flax.nnx import softmax
-from numpy import mean
+from numpy import sum
 from encode import encode
 from load import load
 from xox.init import init
@@ -9,7 +9,7 @@ from xox import O
 
 
 def ask(models, state):
-    y = mean([softmax(model(encode(state))) for model in models], axis=0)
+    y = sum([softmax(model(encode(state))) for model in models], axis=0)
     return y, y.argmax()
 
 
